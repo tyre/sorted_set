@@ -6,6 +6,8 @@ defmodule SortedSet.Mixfile do
      version: "0.1",
      source_url: "https://github.com/SenecaSystems/sorted_set",
      elixir: "~> 1.0",
+     description: "SortedSet implementation for Elixir",
+     licenses: ["MIT"],
      deps: deps]
   end
 
