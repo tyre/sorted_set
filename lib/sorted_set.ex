@@ -59,6 +59,10 @@ defmodule SortedSet do
     end)
   end
 
+  def member?(%SortedSet{}=set, element) do
+    do_member?(to_list(set), element)
+  end
+
   # SortedSet put
 
   defp do_put([head|tail], element) when element > head do
@@ -99,5 +103,21 @@ defmodule SortedSet do
   defp do_delete([], _element) do
     {[], 0}
   end
+
+  # SortedSet member?
+
+  defp do_member?([head|_tail], element) when element < head  do
+    false
+  end
+
+  defp do_member?([head|tail], element) when element > head  do
+    do_member?(tail, element)
+  end
+
+  defp do_member?([head|_tail], element) when element == head  do
+    true
+  end
+
+  defp do_member?([], _element), do: false
 end
 

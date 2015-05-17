@@ -39,4 +39,10 @@ defmodule SortedSetTest do
     assert [1,2,3,4,5,7,9] == SortedSet.to_list union
     assert 7 == SortedSet.size union
   end
+
+  test "it can tell if a set contains an item" do
+    assert SortedSet.member?(SortedSet.new([1,2,3]), 1)
+    assert not SortedSet.member?(SortedSet.new([1,2,3]), 4)
+    assert not SortedSet.member?(SortedSet.new([]), 4)
+  end
 end
