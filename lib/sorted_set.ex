@@ -203,3 +203,13 @@ defimpl Enumerable, for: SortedSet do
   end
 end
 
+defimpl Collectable, for: SortedSet do
+  def into(original) do
+    {original, fn
+      set, {:cont, new_member} -> SortedSet.put(set, new_member)
+      set, :done -> set
+      _, :halt -> :ok
+    end}
+  end
+end
+

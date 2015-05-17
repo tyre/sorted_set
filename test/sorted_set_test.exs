@@ -99,7 +99,7 @@ defmodule SortedSetTest do
     assert not SortedSet.disjoint?(SortedSet.new([1,2,3]), SortedSet.new([3,4,5]))
   end
 
-  test "it adheres to the enumerable protocol" do
+  test "it adheres to the Enumerable protocol" do
     assert Enum.member?(SortedSet.new([1,2]), 1)
     assert not Enum.member?(SortedSet.new(), 1)
 
@@ -107,5 +107,9 @@ defmodule SortedSetTest do
     assert 0 == Enum.count(SortedSet.new())
 
     assert 24 == Enum.reduce(SortedSet.new([1,2,3,4]), 1, fn (n, acc) -> n * acc end)
+  end
+
+  test "it adheres to the Collectable prototcol" do
+    assert [1,2,3,4] == SortedSet.to_list(Enum.into([1,3,4,2,3,4], %SortedSet{}))
   end
 end
