@@ -1,6 +1,9 @@
 defmodule SortedSet do
   @moduledoc """
+    A Set implementation that always remains sorted.
 
+    SortedSet guarantees that no element appears more than once and that
+    enumerating over members happens in their sorted order.
   """
 
   @behaviour Set
