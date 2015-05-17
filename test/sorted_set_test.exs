@@ -66,7 +66,36 @@ defmodule SortedSetTest do
   test "it can return the intersection of two sets" do
     intersection = SortedSet.intersection(SortedSet.new([1,2,3]), SortedSet.new([1,3,5,7,9]))
     assert [1,3] == SortedSet.to_list(intersection)
+
     intersection = SortedSet.intersection(SortedSet.new([1,3,5]), SortedSet.new([2,4,6]))
     assert [] == SortedSet.to_list(intersection)
+
+    intersection = SortedSet.intersection(SortedSet.new, SortedSet.new([1,2,3]))
+    assert [] == SortedSet.to_list(intersection)
+  end
+
+  test "it can find the difference between two sets" do
+    # With members in common
+    difference = SortedSet.difference(SortedSet.new([1,2,3]), SortedSet.new([1,3,5,7,9]))
+    assert [2] == SortedSet.to_list(difference)
+
+    # With no members in common
+    difference = SortedSet.difference(SortedSet.new([1,2,3]), SortedSet.new([5,7,9]))
+    assert [1,2,3] == SortedSet.to_list(difference)
+
+    # When one set is empty
+    difference = SortedSet.difference(SortedSet.new([]), SortedSet.new([5,7,9]))
+    assert [] == SortedSet.to_list(difference)
+
+    # When the other set is empty
+    difference = SortedSet.difference(SortedSet.new([1,2,3]), SortedSet.new([]))
+    assert [1,2,3] == SortedSet.to_list(difference)
+  end
+
+  test "it can tell if two sets are disjointed" do
+    assert SortedSet.disjoint?(SortedSet.new([1,2,3]), SortedSet.new([4,5,6]))
+    assert SortedSet.disjoint?(SortedSet.new(), SortedSet.new([4,5,6]))
+    assert SortedSet.disjoint?(SortedSet.new([4,5,6]), SortedSet.new())
+    assert not SortedSet.disjoint?(SortedSet.new([1,2,3]), SortedSet.new([3,4,5]))
   end
 end

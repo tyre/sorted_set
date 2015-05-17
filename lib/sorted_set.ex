@@ -77,6 +77,16 @@ defmodule SortedSet do
     end)
   end
 
+  def disjoint?(%SortedSet{size: size1}=set1, %SortedSet{size: size2}=set2) when size1 <= size2 do
+    not Enum.any?(to_list(set1), fn(set1_member) ->
+      member?(set2, set1_member)
+    end)
+  end
+
+  def disjoint?(%SortedSet{}=set1, %SortedSet{}=set2) do
+    disjoint?(set2, set1)
+  end
+
   ## SortedSet Operations
 
   def union(%SortedSet{size: size1}=set1, %SortedSet{size: size2}=set2) when size1 <= size2  do
@@ -112,6 +122,28 @@ defmodule SortedSet do
   def intersection(%SortedSet{}=set1, %SortedSet{}=set2) do
     intersection(set2, set1)
   end
+
+  # When the first set is empty, the difference is the empty set
+  def difference(%SortedSet{size: 0}=empty_set, _) do
+    empty_set
+  end
+
+  # When the other set is empty, the difference is the first set
+  def difference(%SortedSet{}=set1, %SortedSet{size: 0}) do
+    set1
+  end
+
+  def difference(%SortedSet{}=set1, %SortedSet{}=set2) do
+    Enum.reduce(to_list(set1), set1, fn(set1_member, new_set) ->
+      if SortedSet.member?(set2, set1_member) do
+        delete(new_set, set1_member)
+      else
+        new_set
+      end
+    end)
+  end
+
+  ## Private helper functions
 
   # SortedSet put
 
