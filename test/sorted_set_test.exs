@@ -5,6 +5,10 @@ defmodule SortedSetTest do
     assert 0 == SortedSet.size SortedSet.new
   end
 
+  test "it sorts an existing list on creation" do
+    assert [1,3,5] == SortedSet.to_list SortedSet.new [1,5,3]
+  end
+
   test "it can put an element into the set" do
     new_set = SortedSet.put SortedSet.new, 1
     assert [1] == SortedSet.to_list new_set
@@ -26,5 +30,13 @@ defmodule SortedSetTest do
     assert 4 == SortedSet.size new_set
 
     assert [] == SortedSet.to_list SortedSet.delete(SortedSet.new(), 1)
+  end
+
+  test "it can perform a union on two sorted sets" do
+    set1 = %SortedSet{members: [1,2,3,4,5], size: 5}
+    set2 = %SortedSet{members: [1,3,5,7,9], size: 5}
+    union = SortedSet.union(set1, set2)
+    assert [1,2,3,4,5,7,9] == SortedSet.to_list union
+    assert 7 == SortedSet.size union
   end
 end

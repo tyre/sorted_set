@@ -20,8 +20,15 @@ defmodule SortedSet do
   @doc false
   defstruct size: 0, members: []
 
+
   def new do
-    %SortedSet{}
+    %SortedSet{members: [], size: 0}
+  end
+
+  def new(members) do
+    Enum.reduce(members, SortedSet.new, fn(member, set) ->
+      put(set, member)
+    end)
   end
 
   def size(%SortedSet{size: size}) do
@@ -40,6 +47,16 @@ defmodule SortedSet do
   def delete(%SortedSet{members: members, size: size}, element) do
     {new_members, members_removed} = do_delete(members, element)
     %SortedSet{members: new_members, size: size - members_removed}
+  end
+
+  def union(%SortedSet{size: size1}=set1, %SortedSet{size: size2}=set2) when size1 > size2 do
+    union(set2, set1)
+  end
+
+  def union(%SortedSet{}=set1, %SortedSet{}=set2) do
+    Enum.reduce(to_list(set1), set2, fn(member, new_set) ->
+      put(new_set, member)
+    end)
   end
 
   # SortedSet put
