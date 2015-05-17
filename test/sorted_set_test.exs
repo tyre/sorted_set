@@ -45,4 +45,14 @@ defmodule SortedSetTest do
     assert not SortedSet.member?(SortedSet.new([1,2,3]), 4)
     assert not SortedSet.member?(SortedSet.new([]), 4)
   end
+
+  test "it can tell if two sets are equal" do
+    assert SortedSet.equal?(SortedSet.new, SortedSet.new)
+    assert SortedSet.equal?(SortedSet.new([1,2,3,4]), SortedSet.new([1,2,3,4]))
+
+    # Ensure it isn't confused by subsets
+    assert not SortedSet.equal?(SortedSet.new([1,2,3]), SortedSet.new([1,2]))
+    # Or supersets
+    assert not SortedSet.equal?(SortedSet.new([1,2]), SortedSet.new([1,2,3]))
+  end
 end

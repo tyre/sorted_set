@@ -63,6 +63,17 @@ defmodule SortedSet do
     do_member?(to_list(set), element)
   end
 
+  # If the sizes are not equal, no need to check members
+  def equal?(%SortedSet{size: size1}=set1, %SortedSet{size: size2}=set2) when size1 != size2  do
+    false
+  end
+
+  def equal?(%SortedSet{}=set1, %SortedSet{}=set2) do
+    Enum.reduce(to_list(set1), set2, fn(member, new_set) ->
+      put(new_set, member)
+    end)
+  end
+
   # SortedSet put
 
   defp do_put([head|tail], element) when element > head do
