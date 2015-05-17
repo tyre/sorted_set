@@ -213,3 +213,13 @@ defimpl Collectable, for: SortedSet do
   end
 end
 
+# We want our own inspect so that it will hide the underlying :members and :size
+# fields. Otherwise users may try to play with them directly.
+defimpl Inspect, for: SortedSet do
+  import Inspect.Algebra
+
+  def inspect(set, opts) do
+    concat ["#SortedSet<", Inspect.List.inspect(SortedSet.to_list(set), opts), ">"]
+  end
+end
+

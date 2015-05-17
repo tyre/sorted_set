@@ -112,4 +112,10 @@ defmodule SortedSetTest do
   test "it adheres to the Collectable prototcol" do
     assert [1,2,3,4] == SortedSet.to_list(Enum.into([1,3,4,2,3,4], %SortedSet{}))
   end
+
+  test "it implements the Inspect protocol" do
+    assert "#SortedSet<[0, 1, 2, 5, 6]>" == inspect SortedSet.new [1,0,5,2,5,6,2]
+    assert "#SortedSet<[]>" == inspect SortedSet.new
+
+  end
 end
