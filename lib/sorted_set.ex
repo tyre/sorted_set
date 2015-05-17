@@ -11,7 +11,17 @@ defmodule SortedSet do
   @doc false
   defstruct size: 0, members: []
 
+  @doc ~S"""
+    Returns a new `SortedSet`.
 
+    ## Examples
+
+        iex> inspect SortedSet.new()
+        "#SortedSet<[]>"
+
+        iex> inspect SortedSet.new([1,3,5])
+        "#SortedSet<[1, 3, 5]>"
+  """
   def new do
     %SortedSet{members: [], size: 0}
   end
@@ -22,19 +32,65 @@ defmodule SortedSet do
     end)
   end
 
+  @doc ~S"""
+    Returns the number of elements in a `SortedSet`.
+
+    ## Examples
+
+        iex> SortedSet.size SortedSet.new([1,3,5])
+        3
+  """
   def size(%SortedSet{size: size}) do
     size
   end
 
+  @doc ~S"""
+    Returns a `List` with all of the members of `set`.
+
+    ## Examples
+
+        iex> SortedSet.to_list SortedSet.new([1,3,5])
+        [1,3,5]
+  """
   def to_list(%SortedSet{members: members}) do
     members
   end
 
+  @doc ~S"""
+    Returns a `SortedSet` with all of the members of `set` plus `element`.
+
+    ## Examples
+
+        iex> set = SortedSet.new([1,3,5])
+        iex> SortedSet.to_list SortedSet.put(set, 1)
+        [1,3,5]
+
+        iex> set = SortedSet.new([1,3,5])
+        iex> SortedSet.to_list SortedSet.put(set, 2)
+        [1,2,3,5]
+  """
   def put(%SortedSet{members: members, size: size}, element) do
     {new_members, members_added} = do_put(members, element)
     %SortedSet{members: new_members, size: size + members_added}
   end
 
+  @doc ~S"""
+    Returns a `SortedSet` with all of the members of `set` except for `element`.
+
+    ## Examples
+
+        iex> set = SortedSet.new([1,3,5])
+        iex> SortedSet.to_list SortedSet.delete(set, 1)
+        [3,5]
+
+        iex> set = SortedSet.new([1,3,5])
+        iex> SortedSet.to_list SortedSet.delete(set, 2)
+        [1,3,5]
+
+        iex> set = SortedSet.new([])
+        iex> SortedSet.to_list SortedSet.delete(set, 2)
+        []
+  """
   def delete(%SortedSet{members: members, size: size}, element) do
     {new_members, members_removed} = do_delete(members, element)
     %SortedSet{members: new_members, size: size - members_removed}
@@ -42,21 +98,65 @@ defmodule SortedSet do
 
   ## SortedSet predicate methods
 
+  @doc ~S"""
+    Returns `true` if `set` contains `element`
+
+    ## Examples
+
+        iex> set = SortedSet.new([1,3,5])
+        iex> SortedSet.member?(set, 1)
+        true
+
+        iex> set = SortedSet.new([1,3,5])
+        iex> SortedSet.member?(set, 0)
+        false
+  """
   def member?(%SortedSet{}=set, element) do
     do_member?(to_list(set), element)
   end
 
+  @doc ~S"""
+    Returns `true` if all elements in `set1` are in `set2` and all elements in
+    `set2` are in `set1`
+
+    ## Examples
+
+        iex> set1 = SortedSet.new([1,3,5])
+        iex> set2 = SortedSet.new([1,3,5])
+        iex> SortedSet.equal?(set1, set2)
+        true
+
+        iex> set1 = SortedSet.new([1,3,5])
+        iex> set2 = SortedSet.new([1,2,3,4,5])
+        iex> SortedSet.equal?(set1, set2)
+        false
+  """
   # If the sizes are not equal, no need to check members
   def equal?(%SortedSet{size: size1}, %SortedSet{size: size2}) when size1 != size2 do
     false
   end
 
   def equal?(%SortedSet{}=set1, %SortedSet{}=set2) do
-    Enum.reduce(to_list(set1), set2, fn(member, new_set) ->
-      put(new_set, member)
+    Enum.all?(to_list(set1), fn(set1_member) ->
+      member? set2, set1_member
     end)
   end
 
+  @doc ~S"""
+    Returns `true` if all elements in `set1` are in `set2`
+
+    ## Examples
+
+        iex> set1 = SortedSet.new([1,3,5])
+        iex> set2 = SortedSet.new([1,2,3,4,5])
+        iex> SortedSet.subset?(set1, set2)
+        true
+
+        iex> set1 = SortedSet.new([1,2,3,4,5])
+        iex> set2 = SortedSet.new([1,3,5])
+        iex> SortedSet.subset?(set1, set2)
+        false
+  """
   # If set1 is larger than set2, it cannot be a subset of it
   def subset?(%SortedSet{size: size1}, %SortedSet{size: size2}) when size1 > size2 do
     false
@@ -68,6 +168,22 @@ defmodule SortedSet do
     end)
   end
 
+  @doc ~S"""
+    Returns `true` if no member of `set1` is in `set2`. Otherwise returns
+    `false`.
+
+    ## Examples
+
+        iex> set1 = SortedSet.new([1,2,3,4])
+        iex> set2 = SortedSet.new([5,6,7,8])
+        iex> SortedSet.disjoint?(set1, set2)
+        true
+
+        iex> set1 = SortedSet.new([1,2,3,4])
+        iex> set2 = SortedSet.new([4,5,6,7])
+        iex> SortedSet.disjoint?(set1, set2)
+        false
+  """
   def disjoint?(%SortedSet{size: size1}=set1, %SortedSet{size: size2}=set2) when size1 <= size2 do
     not Enum.any?(to_list(set1), fn(set1_member) ->
       member?(set2, set1_member)
@@ -80,6 +196,16 @@ defmodule SortedSet do
 
   ## SortedSet Operations
 
+  @doc ~S"""
+    Returns a `SortedSet` containing the items of both `set1` and `set2`.
+
+    ## Examples
+
+        iex> set1 = SortedSet.new([1,3,5,7])
+        iex> set2 = SortedSet.new([0,2,3,4,5])
+        iex> SortedSet.to_list SortedSet.union(set1, set2)
+        [0,1,2,3,4,5,7]
+  """
   def union(%SortedSet{size: size1}=set1, %SortedSet{size: size2}=set2) when size1 <= size2  do
     Enum.reduce(to_list(set1), set2, fn(member, new_set) ->
       put(new_set, member)
@@ -90,6 +216,17 @@ defmodule SortedSet do
     union(set2, set1)
   end
 
+  @doc ~S"""
+    Returns a `SortedSet` containing the items contained in both `set1` and
+    `set2`.
+
+    ## Examples
+
+        iex> set1 = SortedSet.new([1,3,5,7])
+        iex> set2 = SortedSet.new([0,2,3,4,5])
+        iex> SortedSet.to_list SortedSet.intersection(set1, set2)
+        [3,5]
+  """
   # If either set is empty, the intersection is the empty set
   def intersection(%SortedSet{size: 0}=empty_set, _) do
     empty_set
@@ -114,6 +251,16 @@ defmodule SortedSet do
     intersection(set2, set1)
   end
 
+  @doc ~S"""
+    Returns a `SortedSet` containing the items in `set1` that are not in `set2`.
+
+    ## Examples
+
+        iex> set1 = SortedSet.new([1,2,3,4])
+        iex> set2 = SortedSet.new([2,4,6,8])
+        iex> SortedSet.to_list SortedSet.difference(set1, set2)
+        [1,3]
+  """
   # When the first set is empty, the difference is the empty set
   def difference(%SortedSet{size: 0}=empty_set, _) do
     empty_set

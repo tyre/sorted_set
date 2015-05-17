@@ -1,5 +1,7 @@
 defmodule SortedSetTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
+  doctest SortedSet
+
 
   test "it creates an empty set with size 0" do
     assert 0 == SortedSet.size SortedSet.new
@@ -49,11 +51,13 @@ defmodule SortedSetTest do
   test "it can tell if two sets are equal" do
     assert SortedSet.equal?(SortedSet.new, SortedSet.new)
     assert SortedSet.equal?(SortedSet.new([1,2,3,4]), SortedSet.new([1,2,3,4]))
+    assert not SortedSet.equal?(SortedSet.new([1,2,3]), SortedSet.new([1,2,4]))
 
     # Ensure it isn't confused by subsets
     assert not SortedSet.equal?(SortedSet.new([1,2,3]), SortedSet.new([1,2]))
     # Or supersets
     assert not SortedSet.equal?(SortedSet.new([1,2]), SortedSet.new([1,2,3]))
+
   end
 
   test "it can tell if one set is the subset of another" do
