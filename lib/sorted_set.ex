@@ -64,7 +64,7 @@ defmodule SortedSet do
   end
 
   # If the sizes are not equal, no need to check members
-  def equal?(%SortedSet{size: size1}=set1, %SortedSet{size: size2}=set2) when size1 != size2  do
+  def equal?(%SortedSet{size: size1}, %SortedSet{size: size2}) when size1 != size2 do
     false
   end
 
