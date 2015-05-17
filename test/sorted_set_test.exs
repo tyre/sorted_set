@@ -62,4 +62,11 @@ defmodule SortedSetTest do
     assert SortedSet.subset?(SortedSet.new([1,2,3]), SortedSet.new([1,2,3,4]))
     assert not SortedSet.subset?(SortedSet.new([1,2,3,4]), SortedSet.new([1,2,3]))
   end
+
+  test "it can return the intersection of two sets" do
+    intersection = SortedSet.intersection(SortedSet.new([1,2,3]), SortedSet.new([1,3,5,7,9]))
+    assert [1,3] == SortedSet.to_list(intersection)
+    intersection = SortedSet.intersection(SortedSet.new([1,3,5]), SortedSet.new([2,4,6]))
+    assert [] == SortedSet.to_list(intersection)
+  end
 end
