@@ -74,6 +74,17 @@ defmodule SortedSet do
     end)
   end
 
+  # If set1 is larger than set2, it cannot be a subset of it
+  def subset?(%SortedSet{size: size1}, %SortedSet{size: size2}) when size1 > size2 do
+    false
+  end
+
+  def subset?(%SortedSet{}=set1, %SortedSet{}=set2) do
+    Enum.all?(to_list(set1), fn(set1_member) ->
+      member? set2, set1_member
+    end)
+  end
+
   # SortedSet put
 
   defp do_put([head|tail], element) when element > head do

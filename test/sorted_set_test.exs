@@ -55,4 +55,11 @@ defmodule SortedSetTest do
     # Or supersets
     assert not SortedSet.equal?(SortedSet.new([1,2]), SortedSet.new([1,2,3]))
   end
+
+  test "it can tell if one set is the subset of another" do
+    assert SortedSet.subset?(SortedSet.new, SortedSet.new)
+
+    assert SortedSet.subset?(SortedSet.new([1,2,3]), SortedSet.new([1,2,3,4]))
+    assert not SortedSet.subset?(SortedSet.new([1,2,3,4]), SortedSet.new([1,2,3]))
+  end
 end
