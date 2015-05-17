@@ -16,5 +16,15 @@ defmodule SortedSetTest do
     |> SortedSet.put(3)
     |> SortedSet.put(1)
     assert [1,2,3] == SortedSet.to_list(set)
+    assert 3 == SortedSet.size set
+  end
+
+  test "it can delete from the set" do
+    set = %SortedSet{members: [1,2,3,4,5], size: 5}
+    new_set = SortedSet.delete(set, 3)
+    assert [1,2,4,5] == SortedSet.to_list new_set
+    assert 4 == SortedSet.size new_set
+
+    assert [] == SortedSet.to_list SortedSet.delete(SortedSet.new(), 1)
   end
 end
