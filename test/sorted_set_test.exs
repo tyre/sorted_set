@@ -98,4 +98,14 @@ defmodule SortedSetTest do
     assert SortedSet.disjoint?(SortedSet.new([4,5,6]), SortedSet.new())
     assert not SortedSet.disjoint?(SortedSet.new([1,2,3]), SortedSet.new([3,4,5]))
   end
+
+  test "it adheres to the enumerable protocol" do
+    assert Enum.member?(SortedSet.new([1,2]), 1)
+    assert not Enum.member?(SortedSet.new(), 1)
+
+    assert 3 == Enum.count(SortedSet.new([1,2,3]))
+    assert 0 == Enum.count(SortedSet.new())
+
+    assert 24 == Enum.reduce(SortedSet.new([1,2,3,4]), 1, fn (n, acc) -> n * acc end)
+  end
 end

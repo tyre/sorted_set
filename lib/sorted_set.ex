@@ -1,16 +1,7 @@
 defmodule SortedSet do
+  @moduledoc """
 
-# delete(set, value)  Deletes value from set
-# difference(set1, set2)  Returns a set that is set1 without the members of set2
-# disjoint?(set1, set2) Checks if set1 and set2 have no members in common
-# equal?(set1, set2)  Check if two sets are equal using ===
-# intersection(set1, set2)  Returns a set containing only members in common between set1 and set2
-# member?(set, value) Checks if set contains value
-# put(set, value) Inserts value into set if it does not already contain it
-# size(set) Returns the number of elements in set
-# subset?(set1, set2) Checks if set1‘s members are all contained in set2
-# to_list(set)  Converts set to a list
-# union(set1, set2)  Returns a set containing all members of set1 and set2
+  """
 
   @behaviour Set
 
@@ -201,5 +192,14 @@ defmodule SortedSet do
   end
 
   defp do_member?([], _element), do: false
+end
+
+defimpl Enumerable, for: SortedSet do
+  def count(%SortedSet{size: size}), do: {:ok, size}
+  def member?(%SortedSet{}=set, element), do: {:ok, SortedSet.member?(set, element)}
+  def reduce(%SortedSet{}=set, acc, fun) do
+    SortedSet.to_list(set)
+    |> Enumerable.List.reduce(acc, fun)
+  end
 end
 
