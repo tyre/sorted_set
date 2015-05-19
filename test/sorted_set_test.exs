@@ -26,7 +26,7 @@ defmodule SortedSetTest do
   end
 
   test "it can delete from the set" do
-    set = %SortedSet{members: [1,2,3,4,5], size: 5}
+    set = SortedSet.new([1,2,3,4,5])
     new_set = SortedSet.delete(set, 3)
     assert [1,2,4,5] == SortedSet.to_list new_set
     assert 4 == SortedSet.size new_set
@@ -35,8 +35,8 @@ defmodule SortedSetTest do
   end
 
   test "it can perform a union on two sorted sets" do
-    set1 = %SortedSet{members: [1,2,3,4,5], size: 5}
-    set2 = %SortedSet{members: [1,3,5,7,9], size: 5}
+    set1 = SortedSet.new([1,2,3,4,5])
+    set2 = SortedSet.new([1,3,5,7,9])
     union = SortedSet.union(set1, set2)
     assert [1,2,3,4,5,7,9] == SortedSet.to_list union
     assert 7 == SortedSet.size union
