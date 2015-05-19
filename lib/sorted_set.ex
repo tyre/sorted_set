@@ -93,7 +93,7 @@ defmodule SortedSet do
       iex> SortedSet.to_list SortedSet.delete(set, 2)
       []
   """
-  def delete(%SortedSet{members: members, size: size}, element) do
+  def delete(%SortedSet{members: members}, element) do
     new_tree = RedBlackTree.delete members, element
     %SortedSet{members: new_tree, size: new_tree.size}
   end

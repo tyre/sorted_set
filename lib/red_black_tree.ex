@@ -48,7 +48,7 @@ defmodule RedBlackTree do
     }
   end
 
-  def has_key?(%RedBlackTree{root: root}=tree, key) do
+  def has_key?(%RedBlackTree{root: root}, key) do
     do_has_key?(root, key)
   end
 
