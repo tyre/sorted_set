@@ -77,7 +77,7 @@ defmodule RedBlackTreeTest do
     assert %{a: 1, c: 2, d: 3} == RedBlackTree.reduce(three_level_tree, %{}, depth_aggregator)
 
     still_three_level_tree = RedBlackTree.insert(three_level_tree, :b, 20)
-    assert%{a: 1, b: 3, c: 2, d: 3} == RedBlackTree.reduce(still_three_level_tree, %{}, depth_aggregator)
+    assert %{a: 1, b: 3, c: 2, d: 3} == RedBlackTree.reduce(still_three_level_tree, %{}, depth_aggregator)
 
   end
 
