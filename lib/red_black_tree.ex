@@ -181,7 +181,7 @@ defmodule RedBlackTree do
   # `hash_key(insert_key) === `hash_key(node_key)`, hash the keys using a second
   # algorithm to provide consistent ordering.
   defp fallback_hash_key(key) do
-    :crypto.hash(:md5, key)
+    :crypto.hash(:md5, to_string(key))
   end
 
   defp key_less_than?(key1, key2) do
