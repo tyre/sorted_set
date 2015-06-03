@@ -31,7 +31,7 @@ defmodule RedBlackTree do
   end
 
   def insert(%RedBlackTree{root: root, size: size}=tree, key, value) do
-    {nodes_added, new_root} = do_insert(root, key, value)
+    {nodes_added, new_root} = do_insert(root, key, value, 1)
     %RedBlackTree{
       tree |
       root: make_node_black(new_root),
@@ -107,28 +107,28 @@ defmodule RedBlackTree do
 
   #### Insert
 
-  defp do_insert(nil, insert_key, insert_value) do
+  defp do_insert(nil, insert_key, insert_value, depth) do
     {
       1,
       %Node{
-        Node.new(insert_key, insert_value) |
+        Node.new(insert_key, insert_value, depth) |
         color: :red
       }
     }
 
   end
 
-  defp do_insert(%Node{key: node_key}=node, insert_key, insert_value) when node_key == insert_key do
+  defp do_insert(%Node{key: node_key}=node, insert_key, insert_value, _depth) when node_key == insert_key do
     {0, %Node{node | value: insert_value}}
   end
 
-  defp do_insert(%Node{key: node_key, left: left}=node, insert_key, insert_value) when insert_key < node_key do
-    {nodes_added, new_left} = do_insert(left, insert_key, insert_value)
+  defp do_insert(%Node{key: node_key, left: left}=node, insert_key, insert_value, depth) when insert_key < node_key do
+    {nodes_added, new_left} = do_insert(left, insert_key, insert_value, depth + 1)
     {nodes_added, %Node{node | left: do_balance(new_left)}}
   end
 
-  defp do_insert(%Node{key: node_key, right: right}=node, insert_key, insert_value) when insert_key > node_key do
-    {nodes_added, new_right} = do_insert(right, insert_key, insert_value)
+  defp do_insert(%Node{key: node_key, right: right}=node, insert_key, insert_value, depth) when insert_key > node_key do
+    {nodes_added, new_right} = do_insert(right, insert_key, insert_value, depth + 1)
     {nodes_added, %Node{node | right: do_balance(new_right)}}
   end
 
@@ -398,12 +398,28 @@ defmodule RedBlackTree do
   end
 
   defp balanced_tree(a_node, b_node, c_node, d_node, e_node, f_node, g_node) do
+    min_depth = min_depth([a_node, b_node, c_node, d_node, e_node, f_node, g_node])
     %Node {
       d_node |
       color: :red,
-      left: %Node{b_node| color: :black, left: a_node, right: c_node},
-      right: %Node{f_node | color: :black, left: e_node, right: g_node}
+      depth: min_depth,
+      left: %Node{b_node | color: :black, depth: min_depth + 1,
+        left: %Node{a_node | depth: min_depth + 2},
+        right: %Node{c_node | depth: min_depth + 2}},
+      right: %Node{f_node | color: :black, depth: min_depth + 1,
+        left: %Node{e_node | depth: min_depth + 2},
+        right: %Node{g_node | depth: min_depth + 2},}
     }
+  end
+
+  defp min_depth(list_of_nodes) do
+    Enum.reduce(list_of_nodes, -1, fn (node, acc) ->
+      if acc == -1 || node.depth < acc do
+        node.depth
+      else
+        acc
+      end
+    end)
   end
 
   defp do_reduce(_order, nil, acc, _fun) do
@@ -428,6 +444,6 @@ defmodule RedBlackTree do
   defp do_reduce(:post_order, %Node{left: left, right: right}=node, acc, fun) do
     acc_after_left = do_reduce(:post_order, left, acc, fun)
     acc_after_right = do_reduce(:post_order, right, acc_after_left, fun)
-    acc_after_self = fun.(node, acc_after_right)
+    fun.(node, acc_after_right)
   end
 end

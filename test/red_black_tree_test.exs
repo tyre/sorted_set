@@ -61,6 +61,26 @@ defmodule RedBlackTreeTest do
     assert post_order_members == [:a, :c, :b, :e, :g, :f, :d]
   end
 
+  test "altering depth" do
+    tree = RedBlackTree.new()
+    depth_aggregator = fn(%Node{key: key, depth: depth}, acc) ->
+      Map.put(acc, key, depth)
+    end
+
+    one_level_tree = RedBlackTree.insert(tree, :a, 10)
+    assert one_level_tree.root.depth == 1
+
+    two_level_tree = RedBlackTree.insert(one_level_tree, :c, 20)
+    assert %{a: 1, c: 2} == RedBlackTree.reduce(two_level_tree, %{}, depth_aggregator)
+
+    three_level_tree = RedBlackTree.insert(two_level_tree, :d, 30)
+    assert %{a: 1, c: 2, d: 3} == RedBlackTree.reduce(three_level_tree, %{}, depth_aggregator)
+
+    still_three_level_tree = RedBlackTree.insert(three_level_tree, :b, 20)
+    assert%{a: 1, b: 3, c: 2, d: 3} == RedBlackTree.reduce(still_three_level_tree, %{}, depth_aggregator)
+
+  end
+
   test "has_key?" do
     assert RedBlackTree.has_key?(RedBlackTree.new([a: 1, b: 2]), :b)
     assert not RedBlackTree.has_key?(RedBlackTree.new([a: 1, b: 2]), :c)
@@ -80,17 +100,20 @@ defmodule RedBlackTreeTest do
       size: 5,
       root: %Node{
         key: :b,
+        depth: 1,
         color: :black,
-        left: %Node{key: :a},
+        left: %Node{key: :a, depth: 2},
         right: %Node{
           key: :d,
+          depth: 2,
           color: :red,
-          left: %Node{key: :c},
+          left: %Node{key: :c, depth: 3},
           right: %Node{
             key: :f,
+            depth: 3,
             color: :red,
-            left: %Node{key: :e},
-            right: %Node{key: :g}
+            left: %Node{key: :e, depth: 4},
+            right: %Node{key: :g, depth: 4}
           }
         }
       }
@@ -114,18 +137,21 @@ defmodule RedBlackTreeTest do
       size: 5,
       root: %Node{
         key: :b,
+        depth: 1,
         color: :black,
-        left: %Node{key: :a},
+        left: %Node{key: :a, depth: 2},
         right: %Node{
           key: :f,
+          depth: 2,
           color: :red,
           left: %Node{
             key: :d,
+            depth: 3,
             color: :red,
-            left: %Node{key: :c},
-            right: %Node{key: :e}
+            left: %Node{key: :c, depth: 4},
+            right: %Node{key: :e, depth: 4}
           },
-          right: %Node{key: :g}
+          right: %Node{key: :g, depth: 3}
         }
       }
     }
@@ -149,19 +175,22 @@ defmodule RedBlackTreeTest do
       size: 5,
       root: %Node{
         key: :f,
+        depth: 1,
         color: :black,
         left: %Node{
           key: :d,
+          depth: 2,
           color: :red,
           left: %Node{
             key: :b,
+            depth: 3,
             color: :red,
-            left: %Node{key: :a},
-            right: %Node{key: :c}
+            left: %Node{key: :a, depth: 4},
+            right: %Node{key: :c, depth: 4}
           },
-          right: %Node{key: :e}
+          right: %Node{key: :e, depth: 3}
         },
-        right: %Node{key: :g}
+        right: %Node{key: :g, depth: 2}
       }
     }
 
@@ -184,19 +213,22 @@ defmodule RedBlackTreeTest do
       size: 5,
       root: %Node{
         key: :f,
+        depth: 1,
         color: :black,
         left: %Node{
           key: :b,
+          depth: 2,
           color: :red,
-          left: %Node{key: :a},
+          left: %Node{key: :a, depth: 3},
           right: %Node{
             key: :d,
+            depth: 3,
             color: :red,
-            left: %Node{key: :c},
-            right: %Node{key: :e}
+            left: %Node{key: :c, depth: 4},
+            right: %Node{key: :e, depth: 4}
           },
         },
-        right: %Node{key: :g}
+        right: %Node{key: :g, depth: 2}
       }
     }
 
@@ -217,18 +249,21 @@ defmodule RedBlackTreeTest do
       size: 5,
       root: %Node{
         key: :d,
+        depth: 1,
         color: :red,
         left: %Node{
           key: :b,
+          depth: 2,
           color: :black,
-          left: %Node{ key: :a },
-          right: %Node{ key: :c }
+          left: %Node{ key: :a, depth: 3 },
+          right: %Node{ key: :c, depth: 3 }
         },
         right: %Node{
           key: :f,
+          depth: 2,
           color: :black,
-          left: %Node{ key: :e },
-          right: %Node{ key: :g }
+          left: %Node{ key: :e, depth: 3 },
+          right: %Node{ key: :g, depth: 3 }
         }
       }
     }
