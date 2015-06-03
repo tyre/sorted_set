@@ -123,6 +123,17 @@ defmodule RedBlackTree do
     do_has_key?(right, search_key)
   end
 
+  # For cases when `insert_key !== node_key` but `insert_key == node_key` (e.g.
+  # `1` and `1.0`,) hash the keys to provide consistent ordering.
+  defp do_has_key?(%Node{key: node_key, left: left, right: right}, search_key) when search_key == node_key do
+    if hash_key(search_key) < hash_key(node_key) do
+      do_has_key?(left, search_key)
+    else
+      do_has_key?(right, search_key)
+    end
+  end
+
+
   def balance(%RedBlackTree{root: root}=tree) do
     %RedBlackTree{tree | root: do_balance(root)}
   end

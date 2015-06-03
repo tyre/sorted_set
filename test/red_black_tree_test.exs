@@ -46,6 +46,9 @@ defmodule RedBlackTreeTest do
     # Search
     assert :walrus == RedBlackTree.search(updated, 1.0)
     assert :bubbles == RedBlackTree.search(updated, 1)
+
+    assert true == RedBlackTree.has_key?(updated, 1.0)
+    assert true == RedBlackTree.has_key?(updated, 1)
   end
 
   test "search" do
