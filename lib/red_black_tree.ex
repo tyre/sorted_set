@@ -14,7 +14,7 @@ defmodule RedBlackTree do
   defstruct root: nil, size: 0
 
   # Inline key hashing
-  @compile {:inline, hash_key: 1}
+  @compile {:inline, key_less_than?: 2, hash_key: 1, fallback_hash_key: 1}
 
   def new() do
     %RedBlackTree{}
@@ -96,7 +96,7 @@ defmodule RedBlackTree do
   # For cases when `insert_key !== node_key` but `insert_key == node_key` (e.g.
   # `1` and `1.0`,) hash the keys to provide consistent ordering.
   defp do_search(%Node{key: node_key, left: left, right: right}, search_key) when search_key == node_key do
-    if hash_key(search_key) < hash_key(node_key) do
+    if key_less_than?(search_key, node_key) do
       do_search(left, search_key)
     else
       do_search(right, search_key)
@@ -126,7 +126,7 @@ defmodule RedBlackTree do
   # For cases when `insert_key !== node_key` but `insert_key == node_key` (e.g.
   # `1` and `1.0`,) hash the keys to provide consistent ordering.
   defp do_has_key?(%Node{key: node_key, left: left, right: right}, search_key) when search_key == node_key do
-    if hash_key(search_key) < hash_key(node_key) do
+    if key_less_than?(search_key, node_key) do
       do_has_key?(left, search_key)
     else
       do_has_key?(right, search_key)
@@ -176,6 +176,25 @@ defmodule RedBlackTree do
     :erlang.phash2(key)
   end
 
+  # ¡This is only used as a tiebreaker!
+  # For cases when `insert_key !== node_key` but `insert_key == node_key` AND
+  # `hash_key(insert_key) === `hash_key(node_key)`, hash the keys using a second
+  # algorithm to provide consistent ordering.
+  defp fallback_hash_key(key) do
+    :crypto.hash(:md5, key)
+  end
+
+  defp key_less_than?(key1, key2) do
+    hashed_key1 = hash_key(key1)
+    hashed_key2 = hash_key(key2)
+    cond do
+      hashed_key1 === hashed_key2 ->
+        fallback_hash_key(key1) < fallback_hash_key(key2)
+      hashed_key1 < hashed_key2 -> true
+      true -> false
+    end
+  end
+
   ### Operations
 
   #### Insert
@@ -206,7 +225,7 @@ defmodule RedBlackTree do
   # For cases when `insert_key !== node_key` but `insert_key == node_key` (e.g.
   # `1` and `1.0`,) hash the keys to provide consistent ordering.
   defp do_insert(%Node{key: node_key}=node, insert_key, insert_value, depth) when insert_key == node_key do
-    if hash_key(insert_key) < hash_key(node_key) do
+    if key_less_than?(insert_key, node_key) do
       do_insert_left(node, insert_key, insert_value, depth)
     else
       do_insert_right(node, insert_key, insert_value, depth)
@@ -304,7 +323,7 @@ defmodule RedBlackTree do
   # For cases when `delete_key !== node_key` but `delete_key == node_key` (e.g.
   # `1` and `1.0`,) hash the keys to provide consistent ordering.
   defp do_delete(%Node{key: node_key}=node, delete_key) when delete_key == node_key do
-    if hash_key(delete_key) < hash_key(node_key) do
+    if key_less_than?(delete_key, node_key) do
       do_delete_left(node, delete_key)
     else
       do_delete_right(node, delete_key)
