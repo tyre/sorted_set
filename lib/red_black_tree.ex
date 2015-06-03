@@ -169,6 +169,13 @@ defmodule RedBlackTree do
     %Node{node | color: :black}
   end
 
+  # ¡This is only used as a tiebreaker!
+  # For cases when `insert_key !== node_key` but `insert_key == node_key` (e.g.
+  # `1` and `1.0`,) hash the keys to provide consistent ordering.
+  defp hash_key(key) do
+    :erlang.phash2(key)
+  end
+
   ### Operations
 
   #### Insert
@@ -188,30 +195,32 @@ defmodule RedBlackTree do
     {0, %Node{node | value: insert_value}}
   end
 
-  defp do_insert(%Node{key: node_key, left: left}=node, insert_key, insert_value, depth) when insert_key < node_key do
-    {nodes_added, new_left} = do_insert(left, insert_key, insert_value, depth + 1)
-    {nodes_added, %Node{node | left: do_balance(new_left)}}
+  defp do_insert(%Node{key: node_key}=node, insert_key, insert_value, depth) when insert_key < node_key do
+    do_insert_left(node, insert_key, insert_value, depth)
   end
 
-  defp do_insert(%Node{key: node_key, right: right}=node, insert_key, insert_value, depth) when insert_key > node_key do
-    {nodes_added, new_right} = do_insert(right, insert_key, insert_value, depth + 1)
-    {nodes_added, %Node{node | right: do_balance(new_right)}}
+  defp do_insert(%Node{key: node_key}=node, insert_key, insert_value, depth) when insert_key > node_key do
+    do_insert_right(node, insert_key, insert_value, depth)
   end
 
   # For cases when `insert_key !== node_key` but `insert_key == node_key` (e.g.
   # `1` and `1.0`,) hash the keys to provide consistent ordering.
-  defp do_insert(%Node{key: node_key, right: right, left: left}=node, insert_key, insert_value, depth) when insert_key == node_key do
+  defp do_insert(%Node{key: node_key}=node, insert_key, insert_value, depth) when insert_key == node_key do
     if hash_key(insert_key) < hash_key(node_key) do
-      {nodes_added, new_left} = do_insert(left, insert_key, insert_value, depth + 1)
-      {nodes_added, %Node{node | left: do_balance(new_left)}}
+      do_insert_left(node, insert_key, insert_value, depth)
     else
-      {nodes_added, new_right} = do_insert(right, insert_key, insert_value, depth + 1)
-      {nodes_added, %Node{node | right: do_balance(new_right)}}
+      do_insert_right(node, insert_key, insert_value, depth)
     end
   end
 
-  defp hash_key(key) do
-    :erlang.phash2(key)
+  defp do_insert_left(%Node{left: left}=node, insert_key, insert_value, depth) do
+    {nodes_added, new_left} = do_insert(left, insert_key, insert_value, depth + 1)
+    {nodes_added, %Node{node | left: do_balance(new_left)}}
+  end
+
+  defp do_insert_right(%Node{right: right}=node, insert_key, insert_value, depth) do
+    {nodes_added, new_right} = do_insert(right, insert_key, insert_value, depth + 1)
+    {nodes_added, %Node{node | right: do_balance(new_right)}}
   end
 
   #### Delete
