@@ -1,4 +1,14 @@
 defmodule RedBlackTree do
+  @moduledoc """
+  Red-black trees are key-value stores.
+  While not guaranteed to be perfectly balanced, they guarantee O(log(n)) search
+  time.
+
+  The RedBlackTree module contains an eponymous struct and various useful
+  functions.
+
+  Nodes know their depth (automatically updated on insert/delete)
+  """
   alias RedBlackTree.Node
 
   defstruct root: nil, size: 0
@@ -26,6 +36,14 @@ defmodule RedBlackTree do
     new(RedBlackTree.insert(tree, key, key), tail)
   end
 
+  def size(%RedBlackTree{size: size}) do
+    size
+  end
+
+  def put(tree, key, value) do
+    insert(tree, key, value)
+  end
+
   def insert(%RedBlackTree{root: nil}, key, value) do
     %RedBlackTree{root: Node.new(key, value), size: 1}
   end
@@ -46,6 +64,30 @@ defmodule RedBlackTree do
       root: new_root,
       size: size - nodes_removed
     }
+  end
+
+  def fetch(tree, key) do
+    search(tree, key)
+  end
+
+  def search(%RedBlackTree{root: root}, key) do
+    do_search(root, key)
+  end
+
+  defp do_search(nil, _key) do
+    nil
+  end
+
+  defp do_search(%Node{key: node_key, value: value}, search_key) when node_key == search_key do
+    value
+  end
+
+  defp do_search(%Node{key: node_key, left: left}, search_key) when search_key < node_key do
+    do_search(left, search_key)
+  end
+
+  defp do_search(%Node{key: node_key, right: right}, search_key) when search_key > node_key do
+    do_search(right, search_key)
   end
 
   def has_key?(%RedBlackTree{root: root}, key) do
@@ -451,5 +493,26 @@ defmodule RedBlackTree do
     acc_after_left = do_reduce(:post_order, left, acc, fun)
     acc_after_right = do_reduce(:post_order, right, acc_after_left, fun)
     fun.(node, acc_after_right)
+  end
+end
+
+defimpl Access, for: RedBlackTree do
+  def get(tree, key) do
+    RedBlackTree.search(tree, key)
+  end
+
+  def get_and_update(tree, key, fun) do
+    {get, update} = fun.(RedBlackTree.search(tree, key))
+    {get, RedBlackTree.insert(tree, key, update)}
+  end
+end
+
+defimpl Collectable, for: RedBlackTree do
+  def into(original) do
+    {original, fn
+      tree, {:cont, {key, value}} -> RedBlackTree.insert(tree, key, value)
+      tree, :done -> tree
+      _, :halt -> :ok
+    end}
   end
 end

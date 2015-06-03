@@ -30,6 +30,18 @@ defmodule RedBlackTreeTest do
     assert 2 == red_black_tree.size
   end
 
+  test "search" do
+    tree = RedBlackTree.new([d: 1, b: 2, f: 3, g: 4, c: 5, a: 6, e: 7])
+
+    assert 2 == RedBlackTree.search(tree, :b)
+    assert 6 == RedBlackTree.search(tree, :a)
+    assert 3 == RedBlackTree.search(tree, :f)
+    assert 1 == RedBlackTree.search(tree, :d)
+    assert 7 == RedBlackTree.search(tree, :e)
+    assert 4 == RedBlackTree.search(tree, :g)
+    assert 5 == RedBlackTree.search(tree, :c)
+  end
+
   test "delete" do
     initial_tree = RedBlackTree.new([d: 1, b: 2, c: 3, a: 4])
     pruned_tree = RedBlackTree.delete(initial_tree, :c)
@@ -250,6 +262,24 @@ defmodule RedBlackTreeTest do
     balanced = RedBlackTree.balance(unbalanced)
     assert balanced_tree() == balanced
     assert RedBlackTree.to_list(unbalanced) == RedBlackTree.to_list(balanced)
+  end
+
+  test "implements Collectable" do
+    members = [d: 1, b: 2, f: 3, g: 4, c: 5, a: 6, e: 7]
+    assert Enum.into(members, RedBlackTree) == RedBlackTree.new(members)
+  end
+
+  test "implements Access" do
+    tree = RedBlackTree.new([d: 1, b: 2, f: 3, g: 4, c: 5, a: 6, e: 7])
+    assert 1 == tree[:d]
+    assert 2 == tree[:b]
+    assert 3 == tree[:f]
+    assert 4 == tree[:g]
+
+    {6, %{tree: new_tree}} = get_and_update_in(%{tree: tree}, [:tree, :a], fn (prev) ->
+      {prev, prev * 2}
+    end)
+    assert 12 == RedBlackTree.search(new_tree, :a)
   end
 
   #
