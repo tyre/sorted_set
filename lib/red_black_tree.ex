@@ -160,11 +160,11 @@ defmodule RedBlackTree do
   #            D
   #
   defp do_delete(%Node{key: node_key, left: nil, right: right}, delete_key) when node_key == delete_key do
-    {1, right}
+    {1, %Node{right | depth: right.depth - 1}}
   end
 
-  # If left is nil and there is a right, promote the right. For example,
-  # deleting B in the following tree results in C's left becoming D
+  # If there is a left promote it. For example,
+  # deleting B in the following tree results in C's left becoming A
   #
   #        C
   #       / \
@@ -173,7 +173,7 @@ defmodule RedBlackTree do
   #    A
   #
   defp do_delete(%Node{key: node_key, left: left, right: nil}, delete_key) when node_key == delete_key do
-    {1, left}
+    {1, %Node{left | depth: left.depth - 1}}
   end
 
   # If there are both left and right nodes, recursively promote the left-most
@@ -195,6 +195,7 @@ defmodule RedBlackTree do
       1,
       do_balance(%Node{
         left |
+        depth: left.depth - 1,
         left: do_balance(promote(left)),
         right: right
       })
@@ -227,17 +228,22 @@ defmodule RedBlackTree do
     nil
   end
 
-  defp promote(%Node{left: left, right: nil}) do
-    %Node{ left | color: :red }
+  defp promote(%Node{left: nil, right: nil, depth: depth}=node) do
+    %Node{ node | color: :red, depth: depth - 1 }
   end
 
-  defp promote(%Node{left: nil, right: right}) do
-    %Node{ right | color: :red }
+  defp promote(%Node{left: left, right: nil, depth: depth}) do
+    %Node{ left | color: :red, depth: depth - 1}
   end
 
-  defp promote(%Node{left: left, right: right}) do
+  defp promote(%Node{left: nil, right: right, depth: depth}) do
+    %Node{ right | color: :red, depth: depth - 1}
+  end
+
+  defp promote(%Node{left: left, right: right, depth: depth}) do
     balance(%Node{
       left |
+      depth: depth - 1,
       left: do_balance(promote(left)),
       right: right
     })

@@ -43,6 +43,22 @@ defmodule RedBlackTreeTest do
     assert [] == RedBlackTree.to_list RedBlackTree.delete RedBlackTree.new, :b
   end
 
+  test "delete depth" do
+    initial_tree = RedBlackTree.new([d: 1, b: 2, f: 3, g: 4, c: 5, a: 6, e: 7])
+    depth_aggregator = fn(%Node{key: key, depth: depth}, acc) ->
+      Map.put(acc, key, depth)
+    end
+
+    altered_tree = RedBlackTree.delete(initial_tree, :b)
+    assert %{a: 2, c: 3, d: 1, e: 3, f: 2, g: 3} ==
+           RedBlackTree.reduce(altered_tree, %{}, depth_aggregator)
+
+    unchanged_tree = RedBlackTree.delete(initial_tree, :banana)
+    assert %{a: 3, b: 2, c: 3, d: 1, e: 3, f: 2, g: 3} ==
+           RedBlackTree.reduce(unchanged_tree, %{}, depth_aggregator)
+
+  end
+
   test "reduce" do
     initial_tree = RedBlackTree.new([d: 1, b: 2, f: 3, g: 4, c: 5, a: 6, e: 7])
     aggregator = fn (%Node{key: key}, acc) ->
@@ -78,7 +94,6 @@ defmodule RedBlackTreeTest do
 
     still_three_level_tree = RedBlackTree.insert(three_level_tree, :b, 20)
     assert %{a: 1, b: 3, c: 2, d: 3} == RedBlackTree.reduce(still_three_level_tree, %{}, depth_aggregator)
-
   end
 
   test "has_key?" do
