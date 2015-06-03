@@ -43,6 +43,24 @@ defmodule RedBlackTreeTest do
     assert [] == RedBlackTree.to_list RedBlackTree.delete RedBlackTree.new, :b
   end
 
+  test "reduce" do
+    initial_tree = RedBlackTree.new([d: 1, b: 2, f: 3, g: 4, c: 5, a: 6, e: 7])
+    aggregator = fn (%Node{key: key}, acc) ->
+      acc ++ [key]
+    end
+
+    # should default to in-order
+    no_order_members = RedBlackTree.reduce(initial_tree, [], aggregator)
+    in_order_members = RedBlackTree.reduce(:in_order, initial_tree, [], aggregator)
+    pre_order_members = RedBlackTree.reduce(:pre_order, initial_tree, [], aggregator)
+    post_order_members = RedBlackTree.reduce(:post_order, initial_tree, [], aggregator)
+
+    assert in_order_members == [:a, :b, :c, :d, :e, :f, :g]
+    assert no_order_members == in_order_members
+    assert pre_order_members == [:d, :b, :a, :c, :f, :e, :g]
+    assert post_order_members == [:a, :c, :b, :e, :g, :f, :d]
+  end
+
   test "has_key?" do
     assert RedBlackTree.has_key?(RedBlackTree.new([a: 1, b: 2]), :b)
     assert not RedBlackTree.has_key?(RedBlackTree.new([a: 1, b: 2]), :c)

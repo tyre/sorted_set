@@ -78,12 +78,23 @@ defmodule RedBlackTree do
     end) |> Enum.reverse
   end
 
-  def reduce(%RedBlackTree{root: nil}, acc, _fun) do
+  @doc """
+  For each node, calls the provided function passing in (node, acc)
+  Optionally takes an order as the first argument which can be one of
+  `:in_order`, `:pre_order`, or `:post_order`.
+
+  Defaults to `:in_order` if no order is given.
+  """
+  def reduce(tree, acc, fun) do
+    reduce(:in_order, tree, acc, fun)
+  end
+
+  def reduce(_order, %RedBlackTree{root: nil}, acc, _fun) do
     acc
   end
 
-  def reduce(%RedBlackTree{root: root}, acc, fun) do
-    do_reduce(root, acc, fun)
+  def reduce(order, %RedBlackTree{root: root}, acc, fun) do
+    do_reduce(order, root, acc, fun)
   end
 
   ## Helpers
@@ -395,13 +406,28 @@ defmodule RedBlackTree do
     }
   end
 
-  defp do_reduce(nil, acc, _fun) do
+  defp do_reduce(_order, nil, acc, _fun) do
     acc
   end
 
-  defp do_reduce(%Node{left: left, right: right}=node, acc, fun) do
-    acc_after_left = do_reduce(left, acc, fun)
+  # self, left, right
+  defp do_reduce(:pre_order, %Node{left: left, right: right}=node, acc, fun) do
+    acc_after_self = fun.(node, acc)
+    acc_after_left = do_reduce(:pre_order, left, acc_after_self, fun)
+    do_reduce(:pre_order, right, acc_after_left, fun)
+  end
+
+  # left, self, right
+  defp do_reduce(:in_order, %Node{left: left, right: right}=node, acc, fun) do
+    acc_after_left = do_reduce(:in_order, left, acc, fun)
     acc_after_self = fun.(node, acc_after_left)
-    do_reduce(right, acc_after_self, fun)
+    do_reduce(:in_order, right, acc_after_self, fun)
+  end
+
+  # left, right, self
+  defp do_reduce(:post_order, %Node{left: left, right: right}=node, acc, fun) do
+    acc_after_left = do_reduce(:post_order, left, acc, fun)
+    acc_after_right = do_reduce(:post_order, right, acc_after_left, fun)
+    acc_after_self = fun.(node, acc_after_right)
   end
 end
