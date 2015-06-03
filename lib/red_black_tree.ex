@@ -13,6 +13,9 @@ defmodule RedBlackTree do
 
   defstruct root: nil, size: 0
 
+  # Inline key hashing
+  @compile {:inline, hash_key: 1}
+
   def new() do
     %RedBlackTree{}
   end
@@ -78,7 +81,7 @@ defmodule RedBlackTree do
     nil
   end
 
-  defp do_search(%Node{key: node_key, value: value}, search_key) when node_key == search_key do
+  defp do_search(%Node{key: node_key, value: value}, search_key) when node_key === search_key do
     value
   end
 
@@ -90,6 +93,16 @@ defmodule RedBlackTree do
     do_search(right, search_key)
   end
 
+  # For cases when `insert_key !== node_key` but `insert_key == node_key` (e.g.
+  # `1` and `1.0`,) hash the keys to provide consistent ordering.
+  defp do_search(%Node{key: node_key, left: left, right: right}, search_key) when search_key == node_key do
+    if hash_key(search_key) < hash_key(node_key) do
+      do_search(left, search_key)
+    else
+      do_search(right, search_key)
+    end
+  end
+
   def has_key?(%RedBlackTree{root: root}, key) do
     do_has_key?(root, key)
   end
@@ -98,7 +111,7 @@ defmodule RedBlackTree do
     false
   end
 
-  defp do_has_key?(%Node{key: node_key}, search_key) when node_key == search_key do
+  defp do_has_key?(%Node{key: node_key}, search_key) when node_key === search_key do
     true
   end
 
@@ -160,7 +173,7 @@ defmodule RedBlackTree do
 
   end
 
-  defp do_insert(%Node{key: node_key}=node, insert_key, insert_value, _depth) when node_key == insert_key do
+  defp do_insert(%Node{key: node_key}=node, insert_key, insert_value, _depth) when node_key === insert_key do
     {0, %Node{node | value: insert_value}}
   end
 
@@ -172,6 +185,22 @@ defmodule RedBlackTree do
   defp do_insert(%Node{key: node_key, right: right}=node, insert_key, insert_value, depth) when insert_key > node_key do
     {nodes_added, new_right} = do_insert(right, insert_key, insert_value, depth + 1)
     {nodes_added, %Node{node | right: do_balance(new_right)}}
+  end
+
+  # For cases when `insert_key !== node_key` but `insert_key == node_key` (e.g.
+  # `1` and `1.0`,) hash the keys to provide consistent ordering.
+  defp do_insert(%Node{key: node_key, right: right, left: left}=node, insert_key, insert_value, depth) when insert_key == node_key do
+    if hash_key(insert_key) < hash_key(node_key) do
+      {nodes_added, new_left} = do_insert(left, insert_key, insert_value, depth + 1)
+      {nodes_added, %Node{node | left: do_balance(new_left)}}
+    else
+      {nodes_added, new_right} = do_insert(right, insert_key, insert_value, depth + 1)
+      {nodes_added, %Node{node | right: do_balance(new_right)}}
+    end
+  end
+
+  defp hash_key(key) do
+    :erlang.phash2(key)
   end
 
   #### Delete
@@ -188,7 +217,7 @@ defmodule RedBlackTree do
   #       / \
   #      A   C
   #
-  defp do_delete(%Node{key: node_key, left: nil, right: nil}, delete_key) when node_key == delete_key do
+  defp do_delete(%Node{key: node_key, left: nil, right: nil}, delete_key) when node_key === delete_key do
     {1, nil}
   end
 
@@ -201,7 +230,7 @@ defmodule RedBlackTree do
   #           \
   #            D
   #
-  defp do_delete(%Node{key: node_key, left: nil, right: right}, delete_key) when node_key == delete_key do
+  defp do_delete(%Node{key: node_key, left: nil, right: right}, delete_key) when node_key === delete_key do
     {1, %Node{right | depth: right.depth - 1}}
   end
 
@@ -214,7 +243,7 @@ defmodule RedBlackTree do
   #     /
   #    A
   #
-  defp do_delete(%Node{key: node_key, left: left, right: nil}, delete_key) when node_key == delete_key do
+  defp do_delete(%Node{key: node_key, left: left, right: nil}, delete_key) when node_key === delete_key do
     {1, %Node{left | depth: left.depth - 1}}
   end
 
@@ -232,7 +261,7 @@ defmodule RedBlackTree do
   #    B
   #
   #
-  defp do_delete(%Node{key: node_key, left: left, right: right}, delete_key) when node_key == delete_key do
+  defp do_delete(%Node{key: node_key, left: left, right: right}, delete_key) when node_key === delete_key do
     {
       1,
       do_balance(%Node{
@@ -244,7 +273,25 @@ defmodule RedBlackTree do
     }
   end
 
-  defp do_delete(%Node{key: node_key, left: left}=node, delete_key) when delete_key < node_key do
+  defp do_delete(%Node{key: node_key}=node, delete_key) when delete_key < node_key do
+    do_delete_left(node, delete_key)
+  end
+
+  defp do_delete(%Node{key: node_key}=node, delete_key) when delete_key > node_key do
+    do_delete_right(node, delete_key)
+  end
+
+  # For cases when `delete_key !== node_key` but `delete_key == node_key` (e.g.
+  # `1` and `1.0`,) hash the keys to provide consistent ordering.
+  defp do_delete(%Node{key: node_key}=node, delete_key) when delete_key == node_key do
+    if hash_key(delete_key) < hash_key(node_key) do
+      do_delete_left(node, delete_key)
+    else
+      do_delete_right(node, delete_key)
+    end
+  end
+
+  defp do_delete_left(%Node{left: left}=node, delete_key) do
     {nodes_removed, new_left} = do_delete(left, delete_key)
     {
       nodes_removed,
@@ -255,7 +302,7 @@ defmodule RedBlackTree do
     }
   end
 
-  defp do_delete(%Node{key: node_key, right: right}=node, delete_key) when delete_key > node_key do
+  defp do_delete_right(%Node{right: right}=node, delete_key) do
     {nodes_removed, new_right} = do_delete(right, delete_key)
     {
       nodes_removed,

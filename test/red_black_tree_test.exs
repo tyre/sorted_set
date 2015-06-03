@@ -30,6 +30,24 @@ defmodule RedBlackTreeTest do
     assert 2 == red_black_tree.size
   end
 
+  test "strict equality" do
+    tree = RedBlackTree.new([{1, :bubbles}])
+    updated = RedBlackTree.insert(tree, 1.0, :walrus)
+
+    assert 2 == RedBlackTree.size(updated)
+
+    # Deletes
+    # We convert to lists so that the comparison ignores node colors
+    assert RedBlackTree.to_list(RedBlackTree.new([{1, :bubbles}])) ==
+           RedBlackTree.to_list(RedBlackTree.delete(updated, 1.0))
+    assert RedBlackTree.to_list(RedBlackTree.new([{1.0, :walrus}])) ==
+           RedBlackTree.to_list(RedBlackTree.delete(updated, 1))
+
+    # Search
+    assert :walrus == RedBlackTree.search(updated, 1.0)
+    assert :bubbles == RedBlackTree.search(updated, 1)
+  end
+
   test "search" do
     tree = RedBlackTree.new([d: 1, b: 2, f: 3, g: 4, c: 5, a: 6, e: 7])
 
@@ -266,7 +284,7 @@ defmodule RedBlackTreeTest do
 
   test "implements Collectable" do
     members = [d: 1, b: 2, f: 3, g: 4, c: 5, a: 6, e: 7]
-    assert Enum.into(members, RedBlackTree) == RedBlackTree.new(members)
+    assert Enum.into(members, RedBlackTree.new) == RedBlackTree.new(members)
   end
 
   test "implements Access" do
