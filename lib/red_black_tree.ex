@@ -13,8 +13,10 @@ defmodule RedBlackTree do
 
   defstruct root: nil, size: 0
 
+  @key_hash_bucket 4294967296
+
   # Inline key hashing
-  @compile {:inline, key_less_than?: 2, hash_key: 1, fallback_hash_key: 1}
+  @compile {:inline, key_less_than?: 2, hash_key: 1, fallback_key_hash: 1}
 
   def new() do
     %RedBlackTree{}
@@ -173,23 +175,23 @@ defmodule RedBlackTree do
   # For cases when `insert_key !== node_key` but `insert_key == node_key` (e.g.
   # `1` and `1.0`,) hash the keys to provide consistent ordering.
   defp hash_key(key) do
-    :erlang.phash2(key)
+    :erlang.phash2(key, @key_hash_bucket)
   end
 
-  # ¡This is only used as a tiebreaker!
-  # For cases when `insert_key !== node_key` but `insert_key == node_key` AND
-  # `hash_key(insert_key) === `hash_key(node_key)`, hash the keys using a second
-  # algorithm to provide consistent ordering.
-  defp fallback_hash_key(key) do
-    :crypto.hash(:md5, to_string(key))
+  # In the case that `hash_key(key1) == hash_key(key2)` we can fall back again
+  # to the slower phash function distributed over @key_hash_bucket integers.
+  # If these two collide, go home.
+  defp fallback_key_hash(key) do
+    :erlang.phash(key, @key_hash_bucket)
   end
 
+  # Should only be used when `key1 !== key2 and key1 == key2`. In the case
   defp key_less_than?(key1, key2) do
     hashed_key1 = hash_key(key1)
     hashed_key2 = hash_key(key2)
     cond do
       hashed_key1 === hashed_key2 ->
-        fallback_hash_key(key1) < fallback_hash_key(key2)
+        fallback_key_hash(key1) < fallback_key_hash(key2)
       hashed_key1 < hashed_key2 -> true
       true -> false
     end
