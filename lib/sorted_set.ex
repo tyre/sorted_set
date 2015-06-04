@@ -1,4 +1,5 @@
 defmodule SortedSet do
+  alias RedBlackTree
   @moduledoc """
     A Set implementation that always remains sorted.
 
@@ -10,9 +11,9 @@ defmodule SortedSet do
 
   # Define the type as opaque
 
-  @opaque t :: %__MODULE__{members: list, size: non_neg_integer}
+  @opaque t :: %__MODULE__{members: RedBlackTree, size: non_neg_integer}
   @doc false
-  defstruct size: 0, members: []
+  defstruct members: RedBlackTree.new, size: 0
 
   @doc ~S"""
   Returns a new `SortedSet`, initialized with the unique, sorted values of
@@ -53,7 +54,8 @@ defmodule SortedSet do
       [1,3,5]
   """
   def to_list(%SortedSet{members: members}) do
-    members
+    RedBlackTree.to_list(members)
+    |> Enum.map(fn ({key, _value}) -> key end)
   end
 
   @doc ~S"""
@@ -69,9 +71,9 @@ defmodule SortedSet do
       iex> SortedSet.to_list SortedSet.put(set, 2)
       [1,2,3,5]
   """
-  def put(%SortedSet{members: members, size: size}, element) do
-    {new_members, members_added} = do_put(members, element)
-    %SortedSet{members: new_members, size: size + members_added}
+  def put(%SortedSet{members: members}, element) do
+    new_tree = RedBlackTree.insert members, element, element
+    %SortedSet{members: new_tree, size: new_tree.size}
   end
 
   @doc ~S"""
@@ -91,9 +93,9 @@ defmodule SortedSet do
       iex> SortedSet.to_list SortedSet.delete(set, 2)
       []
   """
-  def delete(%SortedSet{members: members, size: size}, element) do
-    {new_members, members_removed} = do_delete(members, element)
-    %SortedSet{members: new_members, size: size - members_removed}
+  def delete(%SortedSet{members: members}, element) do
+    new_tree = RedBlackTree.delete members, element
+    %SortedSet{members: new_tree, size: new_tree.size}
   end
 
   ## SortedSet predicate methods
@@ -111,8 +113,8 @@ defmodule SortedSet do
       iex> SortedSet.member?(set, 0)
       false
   """
-  def member?(%SortedSet{}=set, element) do
-    do_member?(to_list(set), element)
+  def member?(%SortedSet{members: tree}, element) do
+    RedBlackTree.has_key? tree, element
   end
 
   # If the sizes are not equal, no need to check members
@@ -280,65 +282,6 @@ defmodule SortedSet do
   def difference(%SortedSet{}=set1, %SortedSet{size: 0}) do
     set1
   end
-
-  ## Private helper functions
-
-  # SortedSet put
-
-  defp do_put([head|tail], element) when element > head do
-    {tail_members, members_added} = do_put(tail, element)
-    {[head | tail_members], members_added}
-  end
-
-  defp do_put([head|_tail]=sorted_set, element) when element < head do
-    {[element | sorted_set], 1}
-  end
-
-  defp do_put([head|_tail]=sorted_set, element) when element == head do
-    {sorted_set, 0}
-  end
-
-  defp do_put([], element), do: {[element], 1}
-
-  # SortedSet delete
-
-  # If the element is less than the one we are looking at, we can safely
-  # know it was never in the set
-  defp do_delete([head|_tail]=members, element) when element < head do
-    {members, 0}
-  end
-
-  # If the element is greater than the current head, we haven't reached where it
-  # might exist in the set. Recur again on the tail.
-  defp do_delete([head|tail], element) when element > head do
-    {tail_members, members_removed} = do_delete(tail, element)
-    {[head | tail_members], members_removed}
-  end
-
-  # If the element matches the head, drop it
-  defp do_delete([head|tail], element) when element == head do
-    {tail, 1}
-  end
-
-  defp do_delete([], _element) do
-    {[], 0}
-  end
-
-  # SortedSet member?
-
-  defp do_member?([head|_tail], element) when element < head  do
-    false
-  end
-
-  defp do_member?([head|tail], element) when element > head  do
-    do_member?(tail, element)
-  end
-
-  defp do_member?([head|_tail], element) when element == head  do
-    true
-  end
-
-  defp do_member?([], _element), do: false
 end
 
 defimpl Enumerable, for: SortedSet do
