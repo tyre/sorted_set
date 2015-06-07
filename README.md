@@ -1,5 +1,5 @@
 # SortedSet
-[![Hex.pm](https://img.shields.io/hexpm/v/sorted_set.svg)](https://hex.pm/packages/sorted_set) [![Travis](https://img.shields.io/travis/SenecaSystems/sorted_set.svg)](https://travis-ci.org/SenecaSystems/sorted_set) 
+[![Hex.pm](https://img.shields.io/hexpm/v/sorted_set.svg)](https://hex.pm/packages/sorted_set) [![Travis](https://img.shields.io/travis/SenecaSystems/sorted_set.svg)](https://travis-ci.org/SenecaSystems/sorted_set)
 
 
 A sorted set library for Elixir. Implements the
@@ -30,5 +30,6 @@ SortedSet.new()
 |> Set.put(1)
 |> Set.put(3)
 |> Enum.reduce([], fn (element, acc) -> [element*2|acc] end)
+|> Enum.reverse
 # [2, 6, 10]
 ```
