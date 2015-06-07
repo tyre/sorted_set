@@ -1,4 +1,7 @@
 # SortedSet
+[![Hex.pm](https://img.shields.io/hexpm/v/sorted_set.svg)](https://hex.pm/packages/sorted_set) [![Travis](https://img.shields.io/travis/SenecaSystems/sorted_set.svg)](https://travis-ci.org/SenecaSystems/sorted_set) 
+
+
 A sorted set library for Elixir. Implements the
 [Set](http://elixir-lang.org/docs/v1.0/elixir/Set.html) protocol.
 
