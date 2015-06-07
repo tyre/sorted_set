@@ -10,6 +10,7 @@ defmodule RedBlackTree do
   Nodes know their depth (automatically updated on insert/delete)
   """
   alias RedBlackTree.Node
+  use Dict
 
   defstruct root: nil, size: 0
 
@@ -41,12 +42,26 @@ defmodule RedBlackTree do
     new(RedBlackTree.insert(tree, key, key), tail)
   end
 
+  ## Dict behaviour functions
   def size(%RedBlackTree{size: size}) do
     size
   end
 
   def put(tree, key, value) do
     insert(tree, key, value)
+  end
+
+  def fetch(tree, key) do
+    if has_key?(tree, key) do
+      {:ok, search(tree, key)}
+    else
+      :error
+    end
+  end
+
+  def reduce(tree, acc, fun) do
+    RedBlackTree.to_list(tree)
+    |> Enumerable.List.reduce(acc, fun)
   end
 
   def insert(%RedBlackTree{root: nil}, key, value) do
@@ -69,10 +84,6 @@ defmodule RedBlackTree do
       root: new_root,
       size: size - nodes_removed
     }
-  end
-
-  def fetch(tree, key) do
-    search(tree, key)
   end
 
   def search(%RedBlackTree{root: root}, key) do
@@ -594,11 +605,7 @@ end
 defimpl Enumerable, for: RedBlackTree do
   def count(%RedBlackTree{size: size}), do: size
   def member?(%RedBlackTree{}=tree, key), do: RedBlackTree.has_key?(tree, key)
-  def reduce(tree, acc, fun) do
-    RedBlackTree.to_list(tree)
-    |> Enumerable.List.reduce(acc, fun)
-  end
-
+  def reduce(tree, acc, fun), do: RedBlackTree.reduce(tree, acc, fun)
 end
 
 defimpl Access, for: RedBlackTree do
