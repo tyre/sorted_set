@@ -54,8 +54,9 @@ defmodule SortedSet do
       [1,3,5]
   """
   def to_list(%SortedSet{members: members}) do
-    RedBlackTree.to_list(members)
-    |> Enum.map(fn ({key, _value}) -> key end)
+    Enum.reduce(members, [], fn ({key, _value}, acc) ->
+      [key | acc]
+    end) |> Enum.reverse
   end
 
   @doc ~S"""

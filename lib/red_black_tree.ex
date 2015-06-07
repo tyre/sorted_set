@@ -136,16 +136,6 @@ defmodule RedBlackTree do
   end
 
 
-  def balance(%RedBlackTree{root: root}=tree) do
-    %RedBlackTree{tree | root: do_balance(root)}
-  end
-
-  def to_list(%RedBlackTree{}=tree) do
-    reduce(tree, [], fn (node, members) ->
-      [{node.key, node.value} | members]
-    end) |> Enum.reverse
-  end
-
   @doc """
   For each node, calls the provided function passing in (node, acc)
   Optionally takes an order as the first argument which can be one of
@@ -153,22 +143,39 @@ defmodule RedBlackTree do
 
   Defaults to `:in_order` if no order is given.
   """
-  def reduce(tree, acc, fun) do
-    reduce(:in_order, tree, acc, fun)
+  def reduce_nodes(%RedBlackTree{}=tree, acc, fun) do
+    reduce_nodes(:in_order, tree, acc, fun)
   end
 
-  def reduce(_order, %RedBlackTree{root: nil}, acc, _fun) do
+  def reduce_nodes(_order, %RedBlackTree{root: nil}, acc, _fun) do
     acc
   end
 
-  def reduce(order, %RedBlackTree{root: root}, acc, fun) do
-    do_reduce(order, root, acc, fun)
+  def reduce_nodes(order, %RedBlackTree{root: root}, acc, fun) do
+    do_reduce_nodes(order, root, acc, fun)
+  end
+
+  @doc """
+  Balances the supplied tree to adhere to the two rules of Red-Black trees:
+
+  1. Every red node must have two black child nodes (and therefore it must have a black parent).
+  2. Every path from a given node to any of its descendant NIL nodes contains the same number of black nodes.
+
+  """
+  def balance(%RedBlackTree{root: root}=tree) do
+    %RedBlackTree{tree | root: do_balance(root)}
+  end
+
+  def to_list(%RedBlackTree{}=tree) do
+    reduce_nodes(tree, [], fn (node, members) ->
+      [{node.key, node.value} | members]
+    end) |> Enum.reverse
   end
 
   ## Helpers
 
   defp make_node_black(%Node{}=node) do
-    %Node{node | color: :black}
+    Node.color(node, :black)
   end
 
   # ¡This is only used as a tiebreaker!
@@ -558,30 +565,40 @@ defmodule RedBlackTree do
     end)
   end
 
-  defp do_reduce(_order, nil, acc, _fun) do
+  defp do_reduce_nodes(_order, nil, acc, _fun) do
     acc
   end
 
   # self, left, right
-  defp do_reduce(:pre_order, %Node{left: left, right: right}=node, acc, fun) do
+  defp do_reduce_nodes(:pre_order, %Node{left: left, right: right}=node, acc, fun) do
     acc_after_self = fun.(node, acc)
-    acc_after_left = do_reduce(:pre_order, left, acc_after_self, fun)
-    do_reduce(:pre_order, right, acc_after_left, fun)
+    acc_after_left = do_reduce_nodes(:pre_order, left, acc_after_self, fun)
+    do_reduce_nodes(:pre_order, right, acc_after_left, fun)
   end
 
   # left, self, right
-  defp do_reduce(:in_order, %Node{left: left, right: right}=node, acc, fun) do
-    acc_after_left = do_reduce(:in_order, left, acc, fun)
+  defp do_reduce_nodes(:in_order, %Node{left: left, right: right}=node, acc, fun) do
+    acc_after_left = do_reduce_nodes(:in_order, left, acc, fun)
     acc_after_self = fun.(node, acc_after_left)
-    do_reduce(:in_order, right, acc_after_self, fun)
+    do_reduce_nodes(:in_order, right, acc_after_self, fun)
   end
 
   # left, right, self
-  defp do_reduce(:post_order, %Node{left: left, right: right}=node, acc, fun) do
-    acc_after_left = do_reduce(:post_order, left, acc, fun)
-    acc_after_right = do_reduce(:post_order, right, acc_after_left, fun)
+  defp do_reduce_nodes(:post_order, %Node{left: left, right: right}=node, acc, fun) do
+    acc_after_left = do_reduce_nodes(:post_order, left, acc, fun)
+    acc_after_right = do_reduce_nodes(:post_order, right, acc_after_left, fun)
     fun.(node, acc_after_right)
   end
+end
+
+defimpl Enumerable, for: RedBlackTree do
+  def count(%RedBlackTree{size: size}), do: size
+  def member?(%RedBlackTree{}=tree, key), do: RedBlackTree.has_key?(tree, key)
+  def reduce(tree, acc, fun) do
+    RedBlackTree.to_list(tree)
+    |> Enumerable.List.reduce(acc, fun)
+  end
+
 end
 
 defimpl Access, for: RedBlackTree do

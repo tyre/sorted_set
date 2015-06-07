@@ -11,4 +11,9 @@ defmodule RedBlackTree.NodeTest do
       right: nil
     } == Node.new(:walrus, :bubbles)
   end
+
+  test "#color" do
+    assert :red == Node.color(%Node{color: :black}, :red).color
+    assert :black == Node.color(%Node{color: :red}, :black).color
+  end
 end

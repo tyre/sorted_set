@@ -84,25 +84,25 @@ defmodule RedBlackTreeTest do
 
     altered_tree = RedBlackTree.delete(initial_tree, :b)
     assert %{a: 2, c: 3, d: 1, e: 3, f: 2, g: 3} ==
-           RedBlackTree.reduce(altered_tree, %{}, depth_aggregator)
+           RedBlackTree.reduce_nodes(altered_tree, %{}, depth_aggregator)
 
     unchanged_tree = RedBlackTree.delete(initial_tree, :banana)
     assert %{a: 3, b: 2, c: 3, d: 1, e: 3, f: 2, g: 3} ==
-           RedBlackTree.reduce(unchanged_tree, %{}, depth_aggregator)
+           RedBlackTree.reduce_nodes(unchanged_tree, %{}, depth_aggregator)
 
   end
 
-  test "reduce" do
+  test "reduce_nodes" do
     initial_tree = RedBlackTree.new([d: 1, b: 2, f: 3, g: 4, c: 5, a: 6, e: 7])
     aggregator = fn (%Node{key: key}, acc) ->
       acc ++ [key]
     end
 
     # should default to in-order
-    no_order_members = RedBlackTree.reduce(initial_tree, [], aggregator)
-    in_order_members = RedBlackTree.reduce(:in_order, initial_tree, [], aggregator)
-    pre_order_members = RedBlackTree.reduce(:pre_order, initial_tree, [], aggregator)
-    post_order_members = RedBlackTree.reduce(:post_order, initial_tree, [], aggregator)
+    no_order_members = RedBlackTree.reduce_nodes(initial_tree, [], aggregator)
+    in_order_members = RedBlackTree.reduce_nodes(:in_order, initial_tree, [], aggregator)
+    pre_order_members = RedBlackTree.reduce_nodes(:pre_order, initial_tree, [], aggregator)
+    post_order_members = RedBlackTree.reduce_nodes(:post_order, initial_tree, [], aggregator)
 
     assert in_order_members == [:a, :b, :c, :d, :e, :f, :g]
     assert no_order_members == in_order_members
@@ -120,13 +120,13 @@ defmodule RedBlackTreeTest do
     assert one_level_tree.root.depth == 1
 
     two_level_tree = RedBlackTree.insert(one_level_tree, :c, 20)
-    assert %{a: 1, c: 2} == RedBlackTree.reduce(two_level_tree, %{}, depth_aggregator)
+    assert %{a: 1, c: 2} == RedBlackTree.reduce_nodes(two_level_tree, %{}, depth_aggregator)
 
     three_level_tree = RedBlackTree.insert(two_level_tree, :d, 30)
-    assert %{a: 1, c: 2, d: 3} == RedBlackTree.reduce(three_level_tree, %{}, depth_aggregator)
+    assert %{a: 1, c: 2, d: 3} == RedBlackTree.reduce_nodes(three_level_tree, %{}, depth_aggregator)
 
     still_three_level_tree = RedBlackTree.insert(three_level_tree, :b, 20)
-    assert %{a: 1, b: 3, c: 2, d: 3} == RedBlackTree.reduce(still_three_level_tree, %{}, depth_aggregator)
+    assert %{a: 1, b: 3, c: 2, d: 3} == RedBlackTree.reduce_nodes(still_three_level_tree, %{}, depth_aggregator)
   end
 
   test "has_key?" do
