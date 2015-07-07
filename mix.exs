@@ -3,7 +3,7 @@ defmodule SortedSet.Mixfile do
 
   def project do
     [app: :sorted_set,
-     version: "1.0.0",
+     version: "1.1.0",
      source_url: "https://github.com/SenecaSystems/sorted_set",
      elixir: "~> 1.0",
      description: "SortedSet implementation for Elixir",
