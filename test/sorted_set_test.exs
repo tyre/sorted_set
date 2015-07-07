@@ -120,6 +120,13 @@ defmodule SortedSetTest do
   test "it implements the Inspect protocol" do
     assert "#SortedSet<[0, 1, 2, 5, 6]>" == inspect SortedSet.new [1,0,5,2,5,6,2]
     assert "#SortedSet<[]>" == inspect SortedSet.new
+  end
 
+  test "adding a custom comparator" do
+    reverse_set = SortedSet.new([0,1,2,3,4], comparator: fn (term1, term2) ->
+      RedBlackTree.compare_terms(term1, term2) * -1
+    end)
+
+    assert [4,3,2,1,0] == SortedSet.to_list(reverse_set)
   end
 end

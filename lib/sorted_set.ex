@@ -9,6 +9,8 @@ defmodule SortedSet do
 
   @behaviour Set
 
+  @default_comparator &RedBlackTree.compare_terms/2
+
   # Define the type as opaque
 
   @opaque t :: %__MODULE__{members: RedBlackTree, size: non_neg_integer}
@@ -19,16 +21,34 @@ defmodule SortedSet do
   Returns a new `SortedSet`, initialized with the unique, sorted values of
   `members`.
 
+  ## Options
+    - `:comparator` function taking two terms and deciding their order. Passed
+    on to the underlying data structure, in this case a Red-Black tree. The
+    default is to compare based on standard Erlang term comparison. To learn
+    more about this option, see the examples given for
+    [RedBlackTree](https://github.com/SenecaSystems/red_black_tree)
+
   ## Examples
 
-      iex> inspect SortedSet.new()
-      "#SortedSet<[]>"
+      iex> SortedSet.new()
+      #SortedSet<[]>
 
-      iex> inspect SortedSet.new([1,3,5])
-      "#SortedSet<[1, 3, 5]>"
+      iex> SortedSet.new([1,3,5])
+      #SortedSet<[1, 3, 5]>
+
+      iex> SortedSet.new([:a, :b, :c], comparator: fn (term1, term2) ->
+      ...>   RedBlackTree.compare_terms(term1, term2) * -1
+      ...> end)
+      #SortedSet<[:c, :b, :a]>
   """
-  def new(members \\ []) do
-    Enum.reduce(members, %SortedSet{}, fn(member, set) ->
+  def new(members \\ [], options \\ [])
+  def new(members, options) do
+    comparator = :proplists.get_value(:comparator, options, @default_comparator)
+    new_set = %SortedSet{
+      members: RedBlackTree.new([], comparator: comparator)
+    }
+
+    Enum.reduce(members, new_set, fn(member, set) ->
       put(set, member)
     end)
   end

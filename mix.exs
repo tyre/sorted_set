@@ -19,7 +19,7 @@ defmodule SortedSet.Mixfile do
 
   defp deps do
     [
-      {:red_black_tree, "~> 1.0"},
+      {:red_black_tree, "~> 1.2"},
       {:earmark, "~> 0.1", only: :dev},
       {:ex_doc, "~> 0.7", only: :dev}
     ]
