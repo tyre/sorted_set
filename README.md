@@ -31,5 +31,23 @@ SortedSet.new()
 |> Set.put(3)
 |> Enum.reduce([], fn (element, acc) -> [element*2|acc] end)
 |> Enum.reverse
-# [2, 6, 10]
+# => [2, 6, 10]
+```
+
+Can also take a custom `:comparator` function to determine ordering. The
+function should accept two terms and
+
+  - return `0` if they are considered equal
+  - return `-1` if the first is considered less than or before the second
+  - return `1` if the first is considered greater than or after the second
+
+This function is passed on to the underlying [red-black tree implementation](https://github.com/SenecaSystems/red_black_tree) implemetation. Otherwise, the
+default Erlang term comparison is used (with an extra bit to handle edgecases — see note in [RedBlackTree](https://github.com/SenecaSystems/red_black_tree)
+README.)
+
+```elixir
+SortedSet.new([:a, :b, :c], comparator: fn (term1, term2) ->
+   RedBlackTree.compare_terms(term1, term2) * -1
+ end)
+# => #SortedSet<[:c, :b, :a]>
 ```
