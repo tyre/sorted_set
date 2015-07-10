@@ -34,7 +34,9 @@ SortedSet.new()
 # => [2, 6, 10]
 ```
 
-Can also take a custom `:comparator` function to determine ordering. The
+## Custom Comparison
+
+Sorted Set can also take a custom `:comparator` function to determine ordering. The
 function should accept two terms and
 
   - return `0` if they are considered equal
